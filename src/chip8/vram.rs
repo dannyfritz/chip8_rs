@@ -5,6 +5,8 @@ const WIDTH: usize = 32;
 const HEIGHT: usize = 64;
 const SPRITE_WIDTH: u8 = 8;
 
+//TODO: Fonts
+
 pub struct Vram {
     data: [[bool; HEIGHT]; WIDTH],
 }

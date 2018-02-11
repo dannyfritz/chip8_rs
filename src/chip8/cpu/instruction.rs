@@ -6,6 +6,7 @@ macro_rules! no_opcode {
     }
 }
 
+#[derive(Debug)]
 pub enum OpCode {
     Set(Register, u8),
     Copy(Register, Register),
@@ -37,6 +38,7 @@ pub enum OpCode {
     Load(Register),
     BCD(Register),
     Font(Register),
+    Random(Register, u8),
 }
 
 pub struct Instruction {
@@ -76,6 +78,7 @@ impl Instruction {
             0x9 => OpCode::JneqVy(self.get_vx(), self.get_vy()),
             0xA => OpCode::SetI(self.get_address()),
             0xB => OpCode::JmpV0(self.get_address()),
+            0xC => OpCode::Random(self.get_vx(), self.get_8bconst()),
             0xD => OpCode::DrawSprite(self.get_vx(), self.get_vy(), self.get_4bconst()),
             0xF => match self.value & 0x00FF {
                 0x15 => OpCode::SetDelayTimer(self.get_vx()),

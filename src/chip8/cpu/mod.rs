@@ -4,9 +4,10 @@ use self::instruction::{Instruction, OpCode};
 use chip8::memory::Memory;
 use chip8::stack::Stack;
 use chip8::vram::Vram;
+use rand::{thread_rng, Rng};
 
 pub struct Cpu {
-    v: [u8; 0xF],
+    v: [u8; 0x10],
     i: u16,
     delay_timer: u8,
     sound_timer: u8,
@@ -17,7 +18,7 @@ pub struct Cpu {
 impl Cpu {
     pub fn new() -> Cpu {
         Cpu {
-            v: [0; 0xF],
+            v: [0; 0x10],
             i: 0,
             delay_timer: 0,
             sound_timer: 0,
@@ -27,9 +28,14 @@ impl Cpu {
     }
     pub fn tick(&mut self, memory: &mut Memory, vram: &mut Vram) {
         let data = memory.read_dword(self.pc);
-        // println!("pc: 0x{:04X}, op: 0x{:04X}", self.pc, data);
         let instruction = Instruction::new(data);
-        match instruction.to_opcode() {
+        //TODO: decrement timer correctly
+        self.delay_timer = self.delay_timer.wrapping_sub(1);
+        self.sound_timer = self.sound_timer.wrapping_sub(1);
+        //TODO: Keyboard
+        let opcode = instruction.to_opcode();
+        println!("{:?}", opcode);
+        match opcode {
             OpCode::Set(vx, value) => {
                 self.v[vx as usize] = value;
             }
@@ -37,16 +43,28 @@ impl Cpu {
                 self.v[vx as usize] = self.v[vy as usize];
             }
             OpCode::Add(vx, value) => {
-                self.v[vx as usize].wrapping_add(value);
+                let (result, overflow) = self.v[vx as usize].overflowing_add(value);
+                self.v[vx as usize] = result;
+                self.v[0xF as usize] = if overflow { 1 } else { 0 };
             }
             OpCode::AddVy(vx, vy) => {
-                self.v[vx as usize] += self.v[vy as usize];
+                let value_x = self.v[vx as usize];
+                let value_y = self.v[vy as usize];
+                let (result, overflow) = value_x.overflowing_add(value_y);
+                self.v[vx as usize] = result;
+                self.v[0xF as usize] = if overflow { 1 } else { 0 };
             }
             OpCode::SubVx(vx, vy) => {
-                self.v[vx as usize] -= self.v[vy as usize];
+                let value_x = self.v[vx as usize];
+                let value_y = self.v[vy as usize];
+                self.v[0xF as usize] = if value_y > value_x { 1 } else { 0 };
+                self.v[vx as usize] -= value_y;
             }
             OpCode::SubVy(vx, vy) => {
-                self.v[vx as usize] = self.v[vy as usize] - self.v[vx as usize];
+                let value_x = self.v[vx as usize];
+                let value_y = self.v[vy as usize];
+                self.v[0xF as usize] = if value_x > value_y { 1 } else { 0 };
+                self.v[vx as usize] = value_y - value_x;
             }
             OpCode::And(vx, vy) => {
                 self.v[vx as usize] &= self.v[vy as usize];
@@ -58,10 +76,14 @@ impl Cpu {
                 self.v[vx as usize] ^= self.v[vy as usize];
             }
             OpCode::ShiftRight(vx, vy) => {
-                self.v[vx as usize] = self.v[vy as usize] >> 1;
+                let value = self.v[vy as usize];
+                self.v[0xF as usize] = value & 0x1;
+                self.v[vx as usize] = value >> 1;
             }
             OpCode::ShiftLeft(vx, vy) => {
-                self.v[vx as usize] = self.v[vy as usize] << 1;
+                let value = self.v[vy as usize];
+                self.v[0xF as usize] = value & 0b1000_0000 >> 7;
+                self.v[vx as usize] = value << 1;
             }
             OpCode::Jmp(address) => {
                 self.pc = address - 2;
@@ -77,7 +99,7 @@ impl Cpu {
             OpCode::Return() => {
                 let addr = self.stack.pop();
                 self.pc = addr;
-                self.pc -= 2;
+                // self.pc -= 2;
             }
             OpCode::Jeq(vx, value) => {
                 if self.v[vx as usize] == value {
@@ -114,13 +136,24 @@ impl Cpu {
                 self.i = value;
             }
             OpCode::SetIVx(vx) => {
-                self.i = self.v[vx as usize] as Address;
+                let value_x = self.v[vx as usize];
+                self.v[0xF as usize] = if self.i + value_x as u16 > 0xFFF {
+                    1
+                } else {
+                    0
+                };
+                //TODO, wrap around 0xFFF
+                self.i += self.v[vx as usize] as Address;
             }
             OpCode::ClearScreen() => {
                 vram.clear();
             }
             OpCode::DrawSprite(vx, vy, value) => {
-                vram.draw_sprite(memory, self.i, vx, vy, value);
+                self.v[0xF as usize] = if vram.draw_sprite(memory, self.i, vx, vy, value) {
+                    1
+                } else {
+                    0
+                };
             }
             OpCode::Store(vx) => {
                 let mut r = 0;
@@ -143,6 +176,12 @@ impl Cpu {
             }
             OpCode::Font(vx) => {
                 println!("Font Not Implemented! 0xFX29");
+                //TODO: VF
+            }
+            OpCode::Random(vx, mask) => {
+                let mut rng = thread_rng();
+                let random = rng.gen::<u8>();
+                self.v[vx as usize] = random & mask;
             }
         }
         self.pc += 2;
