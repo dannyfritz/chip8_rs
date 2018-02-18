@@ -1,4 +1,5 @@
 use chip8::{Address, Register};
+use std::fmt;
 
 macro_rules! no_opcode {
     ($x:expr) => {
@@ -6,7 +7,6 @@ macro_rules! no_opcode {
     }
 }
 
-#[derive(Debug)]
 pub enum OpCode {
     Set(Register, u8),
     Copy(Register, Register),
@@ -41,6 +41,49 @@ pub enum OpCode {
     Random(Register, u8),
     JmpK(Register),
     JmpNK(Register),
+}
+
+impl fmt::Debug for OpCode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            &OpCode::ClearScreen() => write!(f, "ClearScreen()"),
+            &OpCode::Return() => write!(f, "Return()"),
+            &OpCode::Jmp(address) => write!(f, "Jmp({:4x})", address),
+            &OpCode::Call(address) => write!(f, "Call({:4x})", address),
+            &OpCode::Jeq(vx, value) => write!(f, "Jeq({:1x},{:2x})", vx, value),
+            &OpCode::Jneq(vx, value) => write!(f, "Jneq({:1x},{:2x})", vx, value),
+            &OpCode::JeqVy(vx, vy) => write!(f, "JeqVy({:1x},{:1x})", vx, vy),
+            &OpCode::Set(vx, value) => write!(f, "Set({:1x},{:2x})", vx, value),
+            &OpCode::Add(vx, value) => write!(f, "Add({:1x},{:2x})", vx, value),
+            &OpCode::Copy(vx, vy) => write!(f, "Copy({:1x},{:1x})", vx, vy),
+            &OpCode::Or(vx, vy) => write!(f, "Or({:1x},{:1x})", vx, vy),
+            &OpCode::And(vx, vy) => write!(f, "And({:1x},{:1x})", vx, vy),
+            &OpCode::Xor(vx, vy) => write!(f, "Xor({:1x},{:1x})", vx, vy),
+            &OpCode::AddVy(vx, vy) => write!(f, "AddVy({:1x},{:1x})", vx, vy),
+            &OpCode::SubVy(vx, vy) => write!(f, "SubVy({:1x},{:1x})", vx, vy),
+            &OpCode::ShiftRight(vx, vy) => write!(f, "ShiftRight({:1x},{:1x})", vx, vy),
+            &OpCode::SubVx(vx, vy) => write!(f, "SubVx({:1x},{:1x})", vx, vy),
+            &OpCode::ShiftLeft(vx, vy) => write!(f, "ShiftLeft({:1x},{:1x})", vx, vy),
+            &OpCode::JneqVy(vx, vy) => write!(f, "JneqVy({:1x},{:1x})", vx, vy),
+            &OpCode::SetI(address) => write!(f, "SetI({:3x})", address),
+            &OpCode::JmpV0(address) => write!(f, "JmpV0({:3x})", address),
+            &OpCode::Random(vx, value) => write!(f, "Random({:1x},{:2x})", vx, value),
+            &OpCode::DrawSprite(vx, vy, value) => {
+                write!(f, "DrawSprite({:1x},{:1x},{:1x})", vx, vy, value)
+            }
+            &OpCode::JmpK(vx) => write!(f, "JmpK({:1x})", vx),
+            &OpCode::JmpNK(vx) => write!(f, "JmpNK({:1x})", vx),
+            &OpCode::SetDelayTimer(vx) => write!(f, "SetDelayTimer({:1x})", vx),
+            &OpCode::LdDelayTimer(vx) => write!(f, "LdDelayTimer({:1x})", vx),
+            &OpCode::SetSoundTimer(vx) => write!(f, "SetSoundTimer({:1x})", vx),
+            &OpCode::SetIVx(vx) => write!(f, "SetIVx({:1x})", vx),
+            &OpCode::Font(vx) => write!(f, "Font({:1x})", vx),
+            &OpCode::BCD(vx) => write!(f, "BCD({:1x})", vx),
+            &OpCode::Store(vx) => write!(f, "Store({:1x})", vx),
+            &OpCode::Load(vx) => write!(f, "Load({:1x})", vx),
+            // _ => write!(f, ""),
+        }
+    }
 }
 
 pub struct Instruction {
@@ -86,7 +129,7 @@ impl Instruction {
                 0x9E => OpCode::JmpK(self.get_vx()),
                 0xA1 => OpCode::JmpNK(self.get_vx()),
                 _ => no_opcode!(self.value),
-            }
+            },
             0xF => match self.value & 0x00FF {
                 0x15 => OpCode::SetDelayTimer(self.get_vx()),
                 0x07 => OpCode::LdDelayTimer(self.get_vx()),
@@ -97,7 +140,7 @@ impl Instruction {
                 0x55 => OpCode::Store(self.get_vx()),
                 0x65 => OpCode::Load(self.get_vx()),
                 _ => no_opcode!(self.value),
-            }
+            },
             _ => no_opcode!(self.value),
         }
     }

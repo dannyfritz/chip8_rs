@@ -6,6 +6,7 @@ use chip8::vram::Vram;
 use chip8::keyboard::Keyboard;
 use chip8::stack::Stack;
 use rand::{thread_rng, Rng};
+use std::fmt;
 
 pub struct Cpu {
     v: [u8; 0x10],
@@ -14,6 +15,34 @@ pub struct Cpu {
     sound_timer: u8,
     pc: u16,
     stack: Stack,
+}
+
+impl fmt::Debug for Cpu {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "[pc] {:04x}", self.pc)?;
+        write!(f, " [i] {:04x}", self.i)?;
+        write!(f, " [v0]")?;
+        write!(f, " {:02x}", self.v[0])?;
+        write!(f, " {:02x}", self.v[1])?;
+        write!(f, " {:02x}", self.v[2])?;
+        write!(f, " {:02x}", self.v[3])?;
+        write!(f, " [v4]")?;
+        write!(f, " {:02x}", self.v[4])?;
+        write!(f, " {:02x}", self.v[5])?;
+        write!(f, " {:02x}", self.v[6])?;
+        write!(f, " {:02x}", self.v[7])?;
+        write!(f, " [v8]")?;
+        write!(f, " {:02x}", self.v[8])?;
+        write!(f, " {:02x}", self.v[9])?;
+        write!(f, " [va]")?;
+        write!(f, " {:02x}", self.v[10])?;
+        write!(f, " {:02x}", self.v[11])?;
+        write!(f, " {:02x}", self.v[12])?;
+        write!(f, " {:02x}", self.v[13])?;
+        write!(f, " {:02x}", self.v[14])?;
+        write!(f, " [vf] {:02x}", self.v[15])?;
+        write!(f, "")
+    }
 }
 
 impl Cpu {
@@ -28,13 +57,15 @@ impl Cpu {
         }
     }
     pub fn tick(&mut self, memory: &mut Memory, vram: &mut Vram, keyboard: &mut Keyboard) {
+        //TODO: decrement timer correctly
+        println!("{:?}", self);
+        println!("{:?}", self.stack);
         let data = memory.read_dword(self.pc);
         let instruction = Instruction::new(data);
-        //TODO: decrement timer correctly
-        self.delay_timer = self.delay_timer.wrapping_sub(1);
-        self.sound_timer = self.sound_timer.wrapping_sub(1);
         let opcode = instruction.to_opcode();
         println!("{:?}", opcode);
+        self.delay_timer = self.delay_timer.wrapping_sub(1);
+        self.sound_timer = self.sound_timer.wrapping_sub(1);
         match opcode {
             OpCode::Set(vx, value) => {
                 self.v[vx as usize] = value;
@@ -93,13 +124,11 @@ impl Cpu {
             }
             OpCode::Call(address) => {
                 self.stack.push(self.pc);
-                self.pc = address;
-                self.pc -= 2;
+                self.pc = address - 2;
             }
             OpCode::Return() => {
                 let addr = self.stack.pop();
                 self.pc = addr;
-                self.pc -= 2;
             }
             OpCode::Jeq(vx, value) => {
                 if self.v[vx as usize] == value {

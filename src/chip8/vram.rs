@@ -1,21 +1,28 @@
 use chip8::memory::Memory;
 use chip8::Address;
+use std::fmt;
 
 const WIDTH: usize = 32;
 const HEIGHT: usize = 64;
 const SPRITE_WIDTH: u8 = 8;
 
-//TODO: Fonts
-
 pub struct Vram {
     data: [[bool; HEIGHT]; WIDTH],
 }
 
-fn print_pixel(pixel: &bool) {
-    if *pixel == true {
-        print!("#");
-    } else {
-        print!(" ");
+impl fmt::Debug for Vram {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for row in self.data.iter() {
+            for pixel in row.iter() {
+                if *pixel == true {
+                    write!(f, "#")?;
+                } else {
+                    write!(f, " ")?;
+                }
+            }
+            write!(f, "\n")?;
+        }
+        write!(f, "")
     }
 }
 
@@ -36,16 +43,8 @@ impl Vram {
                 self.data[(x + col) as usize][(row + y) as usize] ^= result & 1 == 1;
             }
         }
-        self.print();
+        // println!("{:?}", self);
         //TODO: Return true if a pixel was changed to 1
         return false;
-    }
-    pub fn print(&mut self) {
-        for row in self.data.iter() {
-            for pixel in row.iter() {
-                print_pixel(pixel);
-            }
-            print!("\n");
-        }
     }
 }

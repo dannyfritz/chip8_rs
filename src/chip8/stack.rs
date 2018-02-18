@@ -1,14 +1,24 @@
 use chip8::Address;
+use std::fmt;
+
+const FRAME_COUNT: usize = 16;
 
 pub struct Stack {
-    frames: [u16; 16],
+    frames: [u16; FRAME_COUNT],
     sp: u8,
+}
+
+impl fmt::Debug for Stack {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "[sp] {}", self.sp)?;
+        write!(f, " [top] {:04x}", self.frames[self.sp as usize])
+    }
 }
 
 impl Stack {
     pub fn new() -> Stack {
         Stack {
-            frames: [0; 16],
+            frames: [0; FRAME_COUNT],
             sp: 0,
         }
     }
