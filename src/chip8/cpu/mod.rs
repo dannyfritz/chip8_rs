@@ -2,8 +2,9 @@ mod instruction;
 use chip8::Address;
 use self::instruction::{Instruction, OpCode};
 use chip8::memory::Memory;
-use chip8::stack::Stack;
 use chip8::vram::Vram;
+use chip8::keyboard::Keyboard;
+use chip8::stack::Stack;
 use rand::{thread_rng, Rng};
 
 pub struct Cpu {
@@ -26,13 +27,12 @@ impl Cpu {
             stack: Stack::new(),
         }
     }
-    pub fn tick(&mut self, memory: &mut Memory, vram: &mut Vram) {
+    pub fn tick(&mut self, memory: &mut Memory, vram: &mut Vram, keyboard: &mut Keyboard) {
         let data = memory.read_dword(self.pc);
         let instruction = Instruction::new(data);
         //TODO: decrement timer correctly
         self.delay_timer = self.delay_timer.wrapping_sub(1);
         self.sound_timer = self.sound_timer.wrapping_sub(1);
-        //TODO: Keyboard
         let opcode = instruction.to_opcode();
         println!("{:?}", opcode);
         match opcode {
@@ -182,6 +182,11 @@ impl Cpu {
                 let mut rng = thread_rng();
                 let random = rng.gen::<u8>();
                 self.v[vx as usize] = random & mask;
+            }
+            OpCode::JmpK(vx) => {
+                if keyboard.get_pressed(self.v[vx as usize]) {
+                    self.pc += 2;
+                }
             }
         }
         self.pc += 2;

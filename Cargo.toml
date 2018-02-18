@@ -5,3 +5,4 @@ authors = ["Danny Fritz <dannyfritz@gmail.com>"]
 
 [dependencies]
 rand = "0.4"
+glutin = "0.12.2"

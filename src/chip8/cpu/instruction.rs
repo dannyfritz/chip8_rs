@@ -39,6 +39,7 @@ pub enum OpCode {
     BCD(Register),
     Font(Register),
     Random(Register, u8),
+    JmpK(Register),
 }
 
 pub struct Instruction {
@@ -80,6 +81,10 @@ impl Instruction {
             0xB => OpCode::JmpV0(self.get_address()),
             0xC => OpCode::Random(self.get_vx(), self.get_8bconst()),
             0xD => OpCode::DrawSprite(self.get_vx(), self.get_vy(), self.get_4bconst()),
+            0xE => match self.value & 0x00FF {
+                0xA1 => OpCode::JmpK(self.get_vx()),
+                _ => no_opcode!(self.value),
+            }
             0xF => match self.value & 0x00FF {
                 0x15 => OpCode::SetDelayTimer(self.get_vx()),
                 0x07 => OpCode::LdDelayTimer(self.get_vx()),
