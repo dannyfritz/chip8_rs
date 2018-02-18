@@ -40,6 +40,7 @@ pub enum OpCode {
     Font(Register),
     Random(Register, u8),
     JmpK(Register),
+    JmpNK(Register),
 }
 
 pub struct Instruction {
@@ -82,7 +83,8 @@ impl Instruction {
             0xC => OpCode::Random(self.get_vx(), self.get_8bconst()),
             0xD => OpCode::DrawSprite(self.get_vx(), self.get_vy(), self.get_4bconst()),
             0xE => match self.value & 0x00FF {
-                0xA1 => OpCode::JmpK(self.get_vx()),
+                0x9E => OpCode::JmpK(self.get_vx()),
+                0xA1 => OpCode::JmpNK(self.get_vx()),
                 _ => no_opcode!(self.value),
             }
             0xF => match self.value & 0x00FF {

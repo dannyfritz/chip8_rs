@@ -64,7 +64,7 @@ impl Cpu {
                 let value_x = self.v[vx as usize];
                 let value_y = self.v[vy as usize];
                 self.v[0xF as usize] = if value_x > value_y { 1 } else { 0 };
-                self.v[vx as usize] = value_y - value_x;
+                self.v[vx as usize] = value_y.saturating_sub(value_x);
             }
             OpCode::And(vx, vy) => {
                 self.v[vx as usize] &= self.v[vy as usize];
@@ -99,7 +99,7 @@ impl Cpu {
             OpCode::Return() => {
                 let addr = self.stack.pop();
                 self.pc = addr;
-                // self.pc -= 2;
+                self.pc -= 2;
             }
             OpCode::Jeq(vx, value) => {
                 if self.v[vx as usize] == value {
@@ -172,11 +172,20 @@ impl Cpu {
                 self.i += r;
             }
             OpCode::BCD(vx) => {
-                println!("BCD Not Implemented! 0xFX33");
+                let mut x = self.v[vx as usize];
+                const DECIMAL_LENGTH: usize = 3;
+                let mut digits = vec![0 as u8; DECIMAL_LENGTH];
+                for digit_count in 0..3 {
+                    digits[DECIMAL_LENGTH - digit_count - 1] = x % 10;
+                    x /= 10;
+                }
+                let i = self.i;
+                memory.write(i, digits[0]);
+                memory.write(i + 1, digits[1]);
+                memory.write(i + 2, digits[2]);
             }
             OpCode::Font(vx) => {
-                println!("Font Not Implemented! 0xFX29");
-                //TODO: VF
+                self.i = (self.v[vx as usize] * 5) as Address;
             }
             OpCode::Random(vx, mask) => {
                 let mut rng = thread_rng();
@@ -184,6 +193,11 @@ impl Cpu {
                 self.v[vx as usize] = random & mask;
             }
             OpCode::JmpK(vx) => {
+                if !keyboard.get_pressed(self.v[vx as usize]) {
+                    self.pc += 2;
+                }
+            }
+            OpCode::JmpNK(vx) => {
                 if keyboard.get_pressed(self.v[vx as usize]) {
                     self.pc += 2;
                 }

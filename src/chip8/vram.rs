@@ -30,11 +30,10 @@ impl Vram {
     }
     pub fn draw_sprite(&mut self, memory: &Memory, addr: Address, x: u8, y: u8, rows: u8) -> bool {
         for row in 0..rows {
-            let data = memory.read(addr);
-            let mut cursor = 0b1000_0000;
+            let data = memory.read(addr + row as u16);
             for col in 0..SPRITE_WIDTH {
-                self.data[(x + col) as usize][(row + y) as usize] ^= data & cursor == 1;
-                cursor >> 1;
+                let (result, _) = data.overflowing_shr((SPRITE_WIDTH - col).into());
+                self.data[(x + col) as usize][(row + y) as usize] ^= result & 1 == 1;
             }
         }
         self.print();
