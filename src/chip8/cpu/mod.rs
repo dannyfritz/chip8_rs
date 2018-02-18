@@ -58,12 +58,12 @@ impl Cpu {
     }
     pub fn tick(&mut self, memory: &mut Memory, vram: &mut Vram, keyboard: &mut Keyboard) {
         //TODO: decrement timer correctly
-        println!("{:?}", self);
-        println!("{:?}", self.stack);
+        // println!("? {:?}", self);
+        // println!("? {:?}", self.stack);
         let data = memory.read_dword(self.pc);
         let instruction = Instruction::new(data);
         let opcode = instruction.to_opcode();
-        println!("{:?}", opcode);
+        // println!("> {:?}", opcode);
         self.delay_timer = self.delay_timer.wrapping_sub(1);
         self.sound_timer = self.sound_timer.wrapping_sub(1);
         match opcode {
@@ -88,14 +88,14 @@ impl Cpu {
             OpCode::SubVx(vx, vy) => {
                 let value_x = self.v[vx as usize];
                 let value_y = self.v[vy as usize];
-                self.v[0xF as usize] = if value_y > value_x { 1 } else { 0 };
-                self.v[vx as usize] -= value_y;
+                self.v[0xF as usize] = if value_x > value_y { 1 } else { 0 };
+                self.v[vx as usize] = value_y.saturating_sub(value_x);
             }
             OpCode::SubVy(vx, vy) => {
                 let value_x = self.v[vx as usize];
                 let value_y = self.v[vy as usize];
-                self.v[0xF as usize] = if value_x > value_y { 1 } else { 0 };
-                self.v[vx as usize] = value_y.saturating_sub(value_x);
+                self.v[0xF as usize] = if value_y > value_x { 1 } else { 0 };
+                self.v[vx as usize] = value_x.saturating_sub(value_y);
             }
             OpCode::And(vx, vy) => {
                 self.v[vx as usize] &= self.v[vy as usize];
@@ -122,14 +122,6 @@ impl Cpu {
             OpCode::JmpV0(address) => {
                 self.pc = address + self.v[0] as Address - 2;
             }
-            OpCode::Call(address) => {
-                self.stack.push(self.pc);
-                self.pc = address - 2;
-            }
-            OpCode::Return() => {
-                let addr = self.stack.pop();
-                self.pc = addr;
-            }
             OpCode::Jeq(vx, value) => {
                 if self.v[vx as usize] == value {
                     self.pc += 2;
@@ -150,6 +142,40 @@ impl Cpu {
                     self.pc += 2;
                 }
             }
+            OpCode::JmpK(vx) => {
+                if !keyboard.get_pressed(self.v[vx as usize]) {
+                    self.pc += 2;
+                }
+            }
+            OpCode::JmpNK(vx) => {
+                if keyboard.get_pressed(self.v[vx as usize]) {
+                    self.pc += 2;
+                }
+            }
+            OpCode::Store(vx) => {
+                let mut r = 0;
+                for addr in self.i..self.i + (vx as u16) + 1 {
+                    memory.write(addr, self.v[r as usize]);
+                    r += 1;
+                }
+                self.i += r;
+            }
+            OpCode::Load(vx) => {
+                let mut r = 0;
+                for addr in self.i..self.i + (vx as u16) + 1 {
+                    self.v[r as usize] = memory.read(addr);
+                    r += 1;
+                }
+                self.i += r;
+            }
+            OpCode::Call(address) => {
+                self.stack.push(self.pc);
+                self.pc = address - 2;
+            }
+            OpCode::Return() => {
+                let addr = self.stack.pop();
+                self.pc = addr;
+            }
             OpCode::SetDelayTimer(vx) => {
                 self.delay_timer = self.v[vx as usize];
             }
@@ -164,7 +190,7 @@ impl Cpu {
             OpCode::SetI(value) => {
                 self.i = value;
             }
-            OpCode::SetIVx(vx) => {
+            OpCode::AddIVx(vx) => {
                 let value_x = self.v[vx as usize];
                 self.v[0xF as usize] = if self.i + value_x as u16 > 0xFFF {
                     1
@@ -174,31 +200,20 @@ impl Cpu {
                 //TODO, wrap around 0xFFF
                 self.i += self.v[vx as usize] as Address;
             }
-            OpCode::ClearScreen() => {
-                vram.clear();
-            }
             OpCode::DrawSprite(vx, vy, value) => {
-                self.v[0xF as usize] = if vram.draw_sprite(memory, self.i, vx, vy, value) {
+                let value_x = self.v[vx as usize];
+                let value_y = self.v[vy as usize];
+                self.v[0xF as usize] = if vram.draw_sprite(memory, self.i, value_x, value_y, value) {
                     1
                 } else {
                     0
                 };
             }
-            OpCode::Store(vx) => {
-                let mut r = 0;
-                for addr in self.i..self.i + (vx as u16) {
-                    memory.write(addr, self.v[r as usize]);
-                    r += 1;
-                }
-                self.i += r;
+            OpCode::Font(vx) => {
+                self.i = (self.v[vx as usize] * 5) as Address;
             }
-            OpCode::Load(vx) => {
-                let mut r = 0;
-                for addr in self.i..self.i + (vx as u16) {
-                    self.v[r as usize] = memory.read(addr);
-                    r += 1;
-                }
-                self.i += r;
+            OpCode::ClearScreen() => {
+                vram.clear();
             }
             OpCode::BCD(vx) => {
                 let mut x = self.v[vx as usize];
@@ -213,25 +228,13 @@ impl Cpu {
                 memory.write(i + 1, digits[1]);
                 memory.write(i + 2, digits[2]);
             }
-            OpCode::Font(vx) => {
-                self.i = (self.v[vx as usize] * 5) as Address;
-            }
             OpCode::Random(vx, mask) => {
                 let mut rng = thread_rng();
                 let random = rng.gen::<u8>();
                 self.v[vx as usize] = random & mask;
             }
-            OpCode::JmpK(vx) => {
-                if !keyboard.get_pressed(self.v[vx as usize]) {
-                    self.pc += 2;
-                }
-            }
-            OpCode::JmpNK(vx) => {
-                if keyboard.get_pressed(self.v[vx as usize]) {
-                    self.pc += 2;
-                }
-            }
         }
         self.pc += 2;
+        println!("");
     }
 }

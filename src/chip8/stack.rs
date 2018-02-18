@@ -11,7 +11,11 @@ pub struct Stack {
 impl fmt::Debug for Stack {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "[sp] {}", self.sp)?;
-        write!(f, " [top] {:04x}", self.frames[self.sp as usize])
+        write!(
+            f,
+            " [top] {:04x}",
+            self.frames[(self.sp.saturating_sub(1)) as usize]
+        )
     }
 }
 

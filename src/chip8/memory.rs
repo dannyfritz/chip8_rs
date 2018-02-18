@@ -30,7 +30,7 @@ impl Memory {
             0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
             0xF0, 0x80, 0xF0, 0x80, 0x80, // F
         ];
-        data.append(&mut vec![0; 0x150]);
+        data.append(&mut vec![0; 0x1B0]);
         data.append(&mut program.data.clone());
         for (index, &byte) in data.iter().enumerate() {
             self.data[index] = byte;
