@@ -55,7 +55,8 @@ impl Vram {
                 }
             }
         }
-        println!("{:?}", self);
+        // println!("{:?}", self);
+        //TODO: put frame in a sink
         return pixel_unset;
     }
 }

@@ -56,7 +56,7 @@ impl Cpu {
             stack: Stack::new(),
         }
     }
-    pub fn tick(&mut self, memory: &mut Memory, vram: &mut Vram, keyboard: &mut Keyboard) {
+    pub fn tick(&mut self, memory: &mut Memory, vram: &mut Vram, keyboard: &Keyboard) {
         //TODO: decrement timer correctly
         // println!("? {:?}", self);
         // println!("? {:?}", self.stack);
