@@ -6,6 +6,19 @@ const WIDTH: usize = 64;
 const HEIGHT: usize = 32;
 const SPRITE_WIDTH: u8 = 8;
 
+pub struct PixelBuffer<'a>(pub &'a mut [bool], pub usize);
+
+// impl<'a> PixelBuffer<'a> {
+//     pub fn pitch(&self) -> usize {
+//         self.1
+//     }
+// }
+
+pub struct VideoSink<'a> {
+    pub buffer: PixelBuffer<'a>,
+    pub is_populated: bool,
+}
+
 pub struct Vram {
     data: [[bool; WIDTH]; HEIGHT],
 }
@@ -35,7 +48,7 @@ impl Vram {
     pub fn clear(&mut self) {
         self.data = [[false; WIDTH]; HEIGHT];
     }
-    pub fn draw_sprite(&mut self, memory: &Memory, addr: Address, x: u8, y: u8, rows: u8) -> bool {
+    pub fn draw_sprite(&mut self, memory: &Memory, addr: Address, x: u8, y: u8, rows: u8, sink: &mut VideoSink) -> bool {
         let mut pixel_unset = false;
         for row in 0..rows {
             if row + y >= HEIGHT as u8 {
@@ -55,8 +68,14 @@ impl Vram {
                 }
             }
         }
-        // println!("{:?}", self);
         //TODO: put frame in a sink
+        for row in 0..rows {
+            for col in 0..SPRITE_WIDTH {
+                let pixel = &mut self.data[(row + y) as usize][(col + x) as usize];
+                sink.buffer.0[row as usize * HEIGHT + col as usize] = *pixel;
+            }
+        }
+        // println!("{:?}", self);
         return pixel_unset;
     }
 }

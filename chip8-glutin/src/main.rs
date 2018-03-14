@@ -1,24 +1,32 @@
 extern crate chip8_core;
 extern crate glutin;
+extern crate gl;
 
-use chip8_core::chip8::{Chip8, Keyboard, KeyState};
+use chip8_core::chip8::{Chip8};
+use chip8_core::chip8::keyboard::{Keyboard, KeyState};
+use chip8_core::chip8::vram::{VideoSink, PixelBuffer};
 use chip8_core::program::Program;
 use glutin::{GlContext, ElementState};
 
 fn main() {
-    let mut chip8 = Chip8::new();
-    let tank = Program::new("../programs/tank.ch8");
-    chip8.load_program(tank);
     let mut events_loop = glutin::EventsLoop::new();
     let window = glutin::WindowBuilder::new()
         .with_title("Hello, world!")
-        .with_dimensions(64, 32);
+        .with_dimensions(800, 600);
     let context = glutin::ContextBuilder::new().with_vsync(true);
     let gl_window = glutin::GlWindow::new(window, context, &events_loop).unwrap();
-    
     unsafe {
         gl_window.make_current().unwrap();
     }
+    let data = &mut [false; 64 * 32];
+    let pixel_buffer = PixelBuffer(data , 64);
+    let mut video_sink = VideoSink {
+        buffer: pixel_buffer,
+        is_populated: false,
+    };
+    let mut chip8 = Chip8::new();
+    let tank = Program::new("../programs/tank.ch8");
+    chip8.load_program(tank);
     let mut keyboard = Keyboard::new();
     let mut running = true;
     while running {
@@ -32,7 +40,7 @@ fn main() {
             },
             _ => (),
         });
-        chip8.step(&keyboard);
+        chip8.step(&keyboard, &mut video_sink);
         //TODO: draw frame
     }
 }
