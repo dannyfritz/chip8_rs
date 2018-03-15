@@ -18,7 +18,7 @@ impl Keyboard {
                 KeyState::new(3, false),
                 KeyState::new(4, false),
                 KeyState::new(16, false),
-                KeyState::new(17, false), 
+                KeyState::new(17, false),
                 KeyState::new(18, false),
                 KeyState::new(30, false),
                 KeyState::new(31, false),
@@ -41,7 +41,7 @@ impl Keyboard {
             None => return,
         }
     }
-    pub fn get_pressed(& self, key: u8) -> bool {
+    pub fn get_pressed(&self, key: u8) -> bool {
         self.keys[key as usize].pressed
     }
 }

@@ -1,12 +1,12 @@
 extern crate chip8_core;
-extern crate glutin;
 extern crate gl;
+extern crate glutin;
 
-use chip8_core::chip8::{Chip8};
-use chip8_core::chip8::keyboard::{Keyboard, KeyState};
-use chip8_core::chip8::vram::{VideoSink, PixelBuffer};
+use chip8_core::chip8::Chip8;
+use chip8_core::chip8::keyboard::{KeyState, Keyboard};
+use chip8_core::chip8::vram::{PixelBuffer, VideoSink};
 use chip8_core::program::Program;
-use glutin::{GlContext, ElementState};
+use glutin::{ElementState, GlContext};
 
 fn main() {
     let mut events_loop = glutin::EventsLoop::new();
@@ -19,7 +19,7 @@ fn main() {
         gl_window.make_current().unwrap();
     }
     let data = &mut [false; 64 * 32];
-    let pixel_buffer = PixelBuffer(data , 64);
+    let pixel_buffer = PixelBuffer(data, 64);
     let mut video_sink = VideoSink {
         buffer: pixel_buffer,
         is_populated: false,
@@ -33,8 +33,14 @@ fn main() {
         events_loop.poll_events(|event| match event {
             glutin::Event::WindowEvent { event, .. } => match event {
                 glutin::WindowEvent::Closed => running = false,
-                glutin::WindowEvent::KeyboardInput { device_id: _, input } => {
-                    keyboard.update_key(KeyState::new(input.scancode, input.state == ElementState::Pressed));
+                glutin::WindowEvent::KeyboardInput {
+                    device_id: _,
+                    input,
+                } => {
+                    keyboard.update_key(KeyState::new(
+                        input.scancode,
+                        input.state == ElementState::Pressed,
+                    ));
                 }
                 _ => (),
             },

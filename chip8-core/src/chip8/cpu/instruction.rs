@@ -2,9 +2,9 @@ use chip8::{Address, Register};
 use std::fmt;
 
 macro_rules! no_opcode {
-    ($x:expr) => {
+    ($x: expr) => {
         panic!(format!("No OpCode for 0x{:04X} yet!", $x));
-    }
+    };
 }
 
 pub enum OpCode {

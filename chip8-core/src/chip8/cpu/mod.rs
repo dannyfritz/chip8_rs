@@ -2,7 +2,7 @@ mod instruction;
 use chip8::Address;
 use self::instruction::{Instruction, OpCode};
 use chip8::memory::Memory;
-use chip8::vram::{Vram,VideoSink};
+use chip8::vram::{VideoSink, Vram};
 use chip8::keyboard::Keyboard;
 use chip8::stack::Stack;
 use rand::{thread_rng, Rng};
@@ -56,7 +56,13 @@ impl Cpu {
             stack: Stack::new(),
         }
     }
-    pub fn tick(&mut self, memory: &mut Memory, vram: &mut Vram, keyboard: &Keyboard, video_sink: &mut VideoSink) {
+    pub fn tick(
+        &mut self,
+        memory: &mut Memory,
+        vram: &mut Vram,
+        keyboard: &Keyboard,
+        video_sink: &mut VideoSink,
+    ) {
         //TODO: decrement timer correctly
         // println!("? {:?}", self);
         // println!("? {:?}", self.stack);
@@ -203,11 +209,12 @@ impl Cpu {
             OpCode::DrawSprite(vx, vy, value) => {
                 let value_x = self.v[vx as usize];
                 let value_y = self.v[vy as usize];
-                self.v[0xF as usize] = if vram.draw_sprite(memory, self.i, value_x, value_y, value, video_sink) {
-                    1
-                } else {
-                    0
-                };
+                self.v[0xF as usize] =
+                    if vram.draw_sprite(memory, self.i, value_x, value_y, value, video_sink) {
+                        1
+                    } else {
+                        0
+                    };
             }
             OpCode::Font(vx) => {
                 self.i = (self.v[vx as usize] * 5) as Address;
@@ -235,6 +242,5 @@ impl Cpu {
             }
         }
         self.pc += 2;
-        println!("");
     }
 }

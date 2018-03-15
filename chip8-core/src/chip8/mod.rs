@@ -7,8 +7,8 @@ pub mod keyboard;
 use self::cpu::Cpu;
 use self::memory::Memory;
 use self::vram::Vram;
-use self::keyboard::{Keyboard};
-use self::vram::{VideoSink};
+use self::keyboard::Keyboard;
+use self::vram::VideoSink;
 use program::Program;
 
 pub type Address = u16;
@@ -34,6 +34,7 @@ impl Chip8 {
         self.memory.load_program(program);
     }
     pub fn step(&mut self, keyboard: &Keyboard, mut video_sink: &mut VideoSink) {
-        self.cpu.tick(&mut self.memory, &mut self.vram, keyboard, &mut video_sink);
+        self.cpu
+            .tick(&mut self.memory, &mut self.vram, keyboard, &mut video_sink);
     }
 }

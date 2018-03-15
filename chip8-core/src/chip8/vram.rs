@@ -48,7 +48,15 @@ impl Vram {
     pub fn clear(&mut self) {
         self.data = [[false; WIDTH]; HEIGHT];
     }
-    pub fn draw_sprite(&mut self, memory: &Memory, addr: Address, x: u8, y: u8, rows: u8, sink: &mut VideoSink) -> bool {
+    pub fn draw_sprite(
+        &mut self,
+        memory: &Memory,
+        addr: Address,
+        x: u8,
+        y: u8,
+        rows: u8,
+        sink: &mut VideoSink,
+    ) -> bool {
         let mut pixel_unset = false;
         for row in 0..rows {
             if row + y >= HEIGHT as u8 {
@@ -69,10 +77,10 @@ impl Vram {
             }
         }
         //TODO: put frame in a sink
-        for row in 0..rows {
-            for col in 0..SPRITE_WIDTH {
-                let pixel = &mut self.data[(row + y) as usize][(col + x) as usize];
-                sink.buffer.0[row as usize * HEIGHT + col as usize] = *pixel;
+        for row in 0..HEIGHT {
+            for col in 0..WIDTH {
+                let pixel = &mut self.data[row][col];
+                sink.buffer.0[row * HEIGHT + col] = *pixel;
             }
         }
         // println!("{:?}", self);
