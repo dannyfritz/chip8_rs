@@ -1,5 +1,5 @@
 [workspace]
 members = [
+  "chip8-client",
     "chip8-core",
-    "chip8-glutin",
 ]

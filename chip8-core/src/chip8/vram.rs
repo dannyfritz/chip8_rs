@@ -5,21 +5,23 @@ use std::fmt;
 const WIDTH: usize = 64;
 const HEIGHT: usize = 32;
 const SPRITE_WIDTH: u8 = 8;
+pub struct PixelBuffer(pub [bool; WIDTH * HEIGHT]);
 
-pub struct PixelBuffer<'a>(pub &'a mut [bool], pub usize);
+pub struct VideoSink {
+    pub buffer: Option<PixelBuffer>,
+}
 
-// impl<'a> PixelBuffer<'a> {
-//     pub fn pitch(&self) -> usize {
-//         self.1
-//     }
-// }
-
-pub struct VideoSink<'a> {
-    pub buffer: PixelBuffer<'a>,
-    pub is_populated: bool,
+impl VideoSink {
+    pub fn new() -> VideoSink {
+        VideoSink { buffer: None }
+    }
+    pub fn get(&mut self) -> Option<PixelBuffer> {
+        self.buffer.take()
+    }
 }
 
 pub struct Vram {
+    //TODO: unroll this to [bool; WIDTH * HEIGHT]
     data: [[bool; WIDTH]; HEIGHT],
 }
 
@@ -76,14 +78,14 @@ impl Vram {
                 }
             }
         }
-        //TODO: put frame in a sink
+        let mut buffer = PixelBuffer([false; WIDTH * HEIGHT]);
         for row in 0..HEIGHT {
             for col in 0..WIDTH {
                 let pixel = &mut self.data[row][col];
-                sink.buffer.0[row * HEIGHT + col] = *pixel;
+                buffer.0[row * WIDTH + col] = *pixel;
             }
         }
-        // println!("{:?}", self);
+        sink.buffer = Some(buffer);
         return pixel_unset;
     }
 }
