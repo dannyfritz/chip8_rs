@@ -3,7 +3,7 @@ use chip8::Address;
 use self::instruction::{Instruction, OpCode};
 use chip8::memory::Memory;
 use chip8::vram::{VideoSink, Vram};
-use chip8::keyboard::Keyboard;
+use chip8::keyboard::{HexKey, Keyboard};
 use chip8::stack::Stack;
 use rand::{thread_rng, Rng};
 use std::fmt;
@@ -149,12 +149,12 @@ impl Cpu {
                 }
             }
             OpCode::JmpK(vx) => {
-                if !keyboard.get_pressed(self.v[vx as usize]) {
+                if !keyboard.get_pressed(HexKey::from(self.v[vx as usize])) {
                     self.pc += 2;
                 }
             }
             OpCode::JmpNK(vx) => {
-                if keyboard.get_pressed(self.v[vx as usize]) {
+                if keyboard.get_pressed(HexKey::from(self.v[vx as usize])) {
                     self.pc += 2;
                 }
             }

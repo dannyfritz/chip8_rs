@@ -5,7 +5,9 @@ use std::fmt;
 const WIDTH: usize = 64;
 const HEIGHT: usize = 32;
 const SPRITE_WIDTH: u8 = 8;
-pub struct PixelBuffer(pub [bool; WIDTH * HEIGHT]);
+pub struct PixelBuffer {
+    pub data: [bool; WIDTH * HEIGHT],
+}
 
 pub struct VideoSink {
     pub buffer: Option<PixelBuffer>,
@@ -78,11 +80,13 @@ impl Vram {
                 }
             }
         }
-        let mut buffer = PixelBuffer([false; WIDTH * HEIGHT]);
+        let mut buffer = PixelBuffer {
+            data: [false; WIDTH * HEIGHT],
+        };
         for row in 0..HEIGHT {
             for col in 0..WIDTH {
                 let pixel = &mut self.data[row][col];
-                buffer.0[row * WIDTH + col] = *pixel;
+                buffer.data[row * WIDTH + col] = *pixel;
             }
         }
         sink.buffer = Some(buffer);
