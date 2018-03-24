@@ -2,9 +2,9 @@ use chip8::memory::Memory;
 use chip8::Address;
 use std::fmt;
 
-const WIDTH: usize = 64;
-const HEIGHT: usize = 32;
-const SPRITE_WIDTH: u8 = 8;
+pub const WIDTH: usize = 64;
+pub const HEIGHT: usize = 32;
+const SPRITE_WIDTH: usize = 8;
 pub struct PixelBuffer {
     pub data: [bool; WIDTH * HEIGHT],
 }
@@ -23,14 +23,14 @@ impl VideoSink {
 }
 
 pub struct Vram {
-    //TODO: unroll this to [bool; WIDTH * HEIGHT]
-    data: [[bool; WIDTH]; HEIGHT],
+    data: [bool; WIDTH * HEIGHT],
 }
 
 impl fmt::Debug for Vram {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for row in self.data.iter() {
-            for pixel in row.iter() {
+        for row in 0..HEIGHT {
+            for col in 0..WIDTH {
+                let pixel = &self.data[row * HEIGHT + col];
                 if *pixel == true {
                     write!(f, "#")?;
                 } else {
@@ -46,35 +46,35 @@ impl fmt::Debug for Vram {
 impl Vram {
     pub fn new() -> Vram {
         Vram {
-            data: [[false; WIDTH]; HEIGHT],
+            data: [false; WIDTH * HEIGHT],
         }
     }
     pub fn clear(&mut self) {
-        self.data = [[false; WIDTH]; HEIGHT];
+        self.data = [false; WIDTH * HEIGHT];
     }
     pub fn draw_sprite(
         &mut self,
         memory: &Memory,
-        addr: Address,
+        sprite_addr: Address,
         x: u8,
         y: u8,
         rows: u8,
         sink: &mut VideoSink,
     ) -> bool {
         let mut pixel_unset = false;
-        for row in 0..rows {
-            if row + y >= HEIGHT as u8 {
+        for row in 0..rows as usize {
+            if row + y as usize >= HEIGHT {
                 continue;
             }
-            let data = memory.read(addr + row as u16);
+            let sprite = memory.read(sprite_addr + row as u16);
             for col in 0..SPRITE_WIDTH {
-                if col + x >= WIDTH as u8 {
+                if col + x as usize >= WIDTH {
                     continue;
                 }
-                let (result, _) = data.overflowing_shr((SPRITE_WIDTH - col).into());
-                let pixel = &mut self.data[(row + y) as usize][(col + x) as usize];
+                let (blit, _) = sprite.overflowing_shr((SPRITE_WIDTH - col - 1) as u32);
+                let pixel = &mut self.data[(row + y as usize) * WIDTH + (col + x as usize)];
                 let existing_pixel = *pixel;
-                *pixel ^= result & 1 == 1;
+                *pixel ^= blit & 1 == 1;
                 if existing_pixel == true && *pixel == false {
                     pixel_unset = true;
                 }
@@ -85,7 +85,7 @@ impl Vram {
         };
         for row in 0..HEIGHT {
             for col in 0..WIDTH {
-                let pixel = &mut self.data[row][col];
+                let pixel = &mut self.data[row * WIDTH + col];
                 buffer.data[row * WIDTH + col] = *pixel;
             }
         }

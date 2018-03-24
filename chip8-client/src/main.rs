@@ -5,12 +5,9 @@ use std::time;
 use std::thread;
 use chip8_core::chip8::Chip8;
 use chip8_core::chip8::keyboard::{HexKey, Keyboard};
-use chip8_core::chip8::vram::VideoSink;
+use chip8_core::chip8::vram::{VideoSink, HEIGHT, WIDTH};
 use chip8_core::program::Program;
 use minifb::{Key, Scale, Window, WindowOptions};
-
-const WIDTH: usize = 64;
-const HEIGHT: usize = 32;
 
 fn main() {
     let mut window = Window::new(
@@ -29,7 +26,7 @@ fn main() {
     let mut buffer: Vec<u32> = vec![0; 64 * 32];
     let mut video_sink = VideoSink::new();
     let mut chip8 = Chip8::new();
-    let program = Program::new("../programs/tank.ch8");
+    let program = Program::new("../programs/PONG2");
     chip8.load_program(program);
     let mut keyboard = Keyboard::new();
     while window.is_open() && !window.is_key_down(Key::Escape) {

@@ -41,6 +41,8 @@ impl fmt::Debug for Cpu {
         write!(f, " {:02x}", self.v[13])?;
         write!(f, " {:02x}", self.v[14])?;
         write!(f, " [vf] {:02x}", self.v[15])?;
+        write!(f, " [dt] {:02x}", self.delay_timer)?;
+        write!(f, " [st] {:02x}", self.sound_timer)?;
         write!(f, "")
     }
 }
@@ -63,15 +65,14 @@ impl Cpu {
         keyboard: &Keyboard,
         video_sink: &mut VideoSink,
     ) {
-        //TODO: decrement timer correctly
-        // println!("? {:?}", self);
-        // println!("? {:?}", self.stack);
+        println!(" ? {:?}", self);
+        println!(" ? {:?}", self.stack);
         let data = memory.read_dword(self.pc);
         let instruction = Instruction::new(data);
         let opcode = instruction.to_opcode();
-        // println!("> {:?}", opcode);
-        self.delay_timer = self.delay_timer.wrapping_sub(1);
-        self.sound_timer = self.sound_timer.wrapping_sub(1);
+        println!("> {:?}", opcode);
+        self.delay_timer = self.delay_timer.saturating_sub(1);
+        self.sound_timer = self.sound_timer.saturating_sub(1);
         match opcode {
             OpCode::Set(vx, value) => {
                 self.v[vx as usize] = value;
@@ -149,12 +150,12 @@ impl Cpu {
                 }
             }
             OpCode::JmpK(vx) => {
-                if !keyboard.get_pressed(HexKey::from(self.v[vx as usize])) {
+                if keyboard.get_pressed(HexKey::from(self.v[vx as usize])) {
                     self.pc += 2;
                 }
             }
             OpCode::JmpNK(vx) => {
-                if keyboard.get_pressed(HexKey::from(self.v[vx as usize])) {
+                if !keyboard.get_pressed(HexKey::from(self.v[vx as usize])) {
                     self.pc += 2;
                 }
             }
