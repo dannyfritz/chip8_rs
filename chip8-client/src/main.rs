@@ -37,6 +37,7 @@ fn main() {
             7 8 9 E    a s d f
             A 0 B F    z x c v
         */
+        keyboard.update_key(HexKey::X0, window.is_key_down(Key::X));
         keyboard.update_key(HexKey::X1, window.is_key_down(Key::Key1));
         keyboard.update_key(HexKey::X2, window.is_key_down(Key::Key2));
         keyboard.update_key(HexKey::X3, window.is_key_down(Key::Key3));
