@@ -1,4 +1,5 @@
 use std::convert::From;
+use std::fmt;
 /* INFO:
     1 2 3 C 
     4 5 6 D 
@@ -72,8 +73,20 @@ impl From<HexKey> for usize {
     }
 }
 
+#[derive(Default)]
 pub struct Keyboard {
     keys: [bool; 0x10],
+}
+
+impl fmt::Debug for Keyboard {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for k in 0..0xf {
+            if self.keys[k] {
+                write!(f, "{:?}", HexKey::from(k as u8))?;
+            }
+        }
+        write!(f, "")
+    }
 }
 
 impl Keyboard {

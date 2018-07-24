@@ -1,4 +1,3 @@
-C:\Users\danny\AppData\Roaming\npm-cache\_npx\11748\node_modules\license\bin\cli.js
 The MIT License (MIT)
 Copyright (c) 2018 Danny Fritz
 

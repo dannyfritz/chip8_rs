@@ -7,11 +7,17 @@ pub struct Memory {
     data: [u8; MEMORY_SIZE],
 }
 
-impl Memory {
-    pub fn new() -> Memory {
+impl Default for Memory {
+    fn default() -> Self {
         Memory { data: [0; 4096] }
     }
-    pub fn load_program(&mut self, program: Program) {
+}
+
+impl Memory {
+    pub fn new() -> Memory {
+        Self::default()
+    }
+    pub fn load_program(&mut self, program: &Program) {
         let data: &mut Vec<u8> = &mut vec![
             0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
             0x20, 0x60, 0x20, 0x20, 0x70, // 1

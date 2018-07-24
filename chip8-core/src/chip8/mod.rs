@@ -22,16 +22,22 @@ pub struct Chip8 {
     vram: Vram,
 }
 
-impl Chip8 {
-    pub fn new() -> Chip8 {
+impl Default for Chip8 {
+    fn default() -> Self {
         Chip8 {
             cpu: Cpu::new(),
             memory: Memory::new(),
             vram: Vram::new(),
         }
     }
-    pub fn load_program(&mut self, program: Program) {
-        self.memory.load_program(program);
+}
+
+impl Chip8 {
+    pub fn new() -> Chip8 {
+        Self::default()
+    }
+    pub fn load_program(&mut self, program: &Program) {
+        self.memory.load_program(&program);
     }
     pub fn step(&mut self, keyboard: &Keyboard, mut video_sink: &mut VideoSink) {
         self.cpu

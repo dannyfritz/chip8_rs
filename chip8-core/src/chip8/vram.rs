@@ -9,6 +9,7 @@ pub struct PixelBuffer {
     pub data: [bool; WIDTH * HEIGHT],
 }
 
+#[derive(Default)]
 pub struct VideoSink {
     pub buffer: Option<PixelBuffer>,
 }
@@ -31,23 +32,29 @@ impl fmt::Debug for Vram {
         for row in 0..HEIGHT {
             for col in 0..WIDTH {
                 let pixel = &self.data[row * HEIGHT + col];
-                if *pixel == true {
+                if *pixel {
                     write!(f, "#")?;
                 } else {
                     write!(f, " ")?;
                 }
             }
-            write!(f, "\n")?;
+            writeln!(f)?;
         }
         write!(f, "")
     }
 }
 
-impl Vram {
-    pub fn new() -> Vram {
+impl Default for Vram {
+    fn default() -> Self {
         Vram {
             data: [false; WIDTH * HEIGHT],
         }
+    }
+}
+
+impl Vram {
+    pub fn new() -> Vram {
+        Self::default()
     }
     pub fn clear(&mut self) {
         self.data = [false; WIDTH * HEIGHT];
@@ -75,7 +82,7 @@ impl Vram {
                 let pixel = &mut self.data[(row + y as usize) * WIDTH + (col + x as usize)];
                 let existing_pixel = *pixel;
                 *pixel ^= blit & 1 == 1;
-                if existing_pixel == true && *pixel == false {
+                if existing_pixel && !(*pixel) {
                     pixel_unset = true;
                 }
             }
@@ -90,6 +97,6 @@ impl Vram {
             }
         }
         sink.buffer = Some(buffer);
-        return pixel_unset;
+        pixel_unset
     }
 }

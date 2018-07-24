@@ -26,8 +26,8 @@ fn main() {
     let mut buffer: Vec<u32> = vec![0; 64 * 32];
     let mut video_sink = VideoSink::new();
     let mut chip8 = Chip8::new();
-    let program = Program::new("../programs/PONG2");
-    chip8.load_program(program);
+    let program = Program::new("./programs/GUESS");
+    chip8.load_program(&program);
     let mut keyboard = Keyboard::new();
     while window.is_open() && !window.is_key_down(Key::Escape) {
         /* INFO:
@@ -63,10 +63,11 @@ fn main() {
                     u32::min_value()
                 };
             }
+            println!("update buffer");
             window.update_with_buffer(&buffer).unwrap();
         }
         //TODO: This sleep duration needs to be smarter
         //time::Duration.from_millis(17) and time::Instant()
-        thread::sleep(time::Duration::from_millis(3));
+        // thread::sleep(time::Duration::from_millis(9));
     }
 }
