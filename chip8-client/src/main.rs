@@ -8,7 +8,7 @@ use fb_now::glutin::{
 use fb_now::FbNow;
 
 macro_rules! keyboard_update {
-    ($event: ident, $keyboard: ident, $chip8_keycode: expr, $keycode: pat) => {
+    ($event: ident, $keyboard: ident, $chip8_keycode: path, $keycode: path) => {
         if let WindowEvent::KeyboardInput {
             input:
                 KeyboardInput {
@@ -32,7 +32,7 @@ fn main() {
     let mut window_open = true;
     let mut video_sink = VideoSink::new();
     let mut chip8 = Chip8::new();
-    let program = Program::new("./programs/PONG2");
+    let program = Program::new("./programs/GUESS");
     chip8.load_program(&program);
     let mut keyboard = Keyboard::new();
     while window_open {
@@ -73,9 +73,9 @@ fn main() {
                 .iter()
                 .flat_map(|p| {
                     if *p {
-                        vec![255u8, 255, 255]
+                        vec![10u8, 250, 10]
                     } else {
-                        vec![0u8, 0, 0]
+                        vec![10u8, 10, 10]
                     }
                 })
                 .collect();

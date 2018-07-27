@@ -59,9 +59,8 @@ impl FbNow {
         let index_buffer = glium::IndexBuffer::new(
             &self.display,
             PrimitiveType::TriangleStrip,
-            &[1 as u16, 2, 0, 3],
+            &[1u16, 2, 0, 3],
         ).unwrap();
-        #[allow(redundant_closure)]
         let program = program!(&self.display,
             140 => {
                 vertex: "
@@ -80,7 +79,7 @@ impl FbNow {
                     in vec2 v_tex_coords;
                     out vec4 f_color;
                     void main() {
-                        f_color = texture(tex, v_tex_coords);
+                        f_color = texture(tex, v_tex_coords) / 255.0;
                     }
                 "
             },
