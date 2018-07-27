@@ -2,4 +2,5 @@
 members = [
   "chip8-client",
   "chip8-core",
+  "fb_now",
 ]

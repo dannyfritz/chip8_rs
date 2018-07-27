@@ -1,8 +1,11 @@
+cargo-features = ["edition"]
+
 [package]
 name = "chip8-client"
 version = "0.1.0"
 authors = ["Danny Fritz <dannyfritz@gmail.com>"]
+edition = '2018'
 
 [dependencies]
 chip8-core = { path = "../chip8-core" }
-minifb = "0.10.4"
+fb_now = { path = "../fb_now" }

@@ -1,0 +1,7 @@
+[package]
+name = "fb_now"
+version = "0.1.0"
+authors = ["Danny Fritz <dannyfritz@gmail.com>"]
+
+[dependencies]
+glium = "0.22"
