@@ -1,24 +1,21 @@
 #[macro_use]
 extern crate glium;
 
-pub use glium::glutin::Event;
-pub use glium::glutin::EventsLoop;
-pub use glium::glutin::WindowBuilder;
-pub use glium::glutin::WindowEvent;
+pub use glium::glutin;
 use glium::index::PrimitiveType;
 use glium::texture::unsigned_texture2d::UnsignedTexture2d;
 use glium::texture::RawImage2d;
-use glium::{glutin, Display, Surface};
+use glium::{Display, Surface};
 
 pub struct FbNow {
-    pub events_loop: EventsLoop,
+    pub events_loop: glutin::EventsLoop,
     display: Display,
     buffer_width: u32,
     buffer_height: u32,
 }
 
 impl FbNow {
-    pub fn new(window: WindowBuilder, buffer_width: u32, buffer_height: u32) -> FbNow {
+    pub fn new(window: glutin::WindowBuilder, buffer_width: u32, buffer_height: u32) -> FbNow {
         let events_loop = glutin::EventsLoop::new();
         let context = glutin::ContextBuilder::new().with_vsync(true);
         let display = glium::Display::new(window, context, &events_loop).unwrap();
@@ -42,19 +39,19 @@ impl FbNow {
                 &[
                     Vertex {
                         position: [-1.0, -1.0],
-                        tex_coords: [1.0, 1.0],
+                        tex_coords: [0.0, 1.0],
                     },
                     Vertex {
                         position: [-1.0, 1.0],
-                        tex_coords: [1.0, 0.0],
-                    },
-                    Vertex {
-                        position: [1.0, 1.0],
                         tex_coords: [0.0, 0.0],
                     },
                     Vertex {
+                        position: [1.0, 1.0],
+                        tex_coords: [1.0, 0.0],
+                    },
+                    Vertex {
                         position: [1.0, -1.0],
-                        tex_coords: [0.0, 1.0],
+                        tex_coords: [1.0, 1.0],
                     },
                 ],
             ).unwrap()
