@@ -142,12 +142,14 @@ impl Cpu {
             OpCode::ShiftRight(vx, vy) => {
                 let value = self.v[vy as usize];
                 self.v[0xF as usize] = value & 0x1;
+                self.v[vy as usize] = value >> 1;
                 self.v[vx as usize] = value >> 1;
                 self.pc += 2;
             }
             OpCode::ShiftLeft(vx, vy) => {
                 let value = self.v[vy as usize];
-                self.v[0xF as usize] = value & 0b1000_0000 >> 7;
+                self.v[0xF as usize] = value >> 7;
+                self.v[vy as usize] = value << 1;
                 self.v[vx as usize] = value << 1;
                 self.pc += 2;
             }
