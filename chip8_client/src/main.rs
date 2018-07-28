@@ -33,7 +33,7 @@ fn main() {
         return;
     }
     let program_file = env::args().nth(1).unwrap();
-    let mut fb = FbNow::new(WindowBuilder::new(), WIDTH as u32, HEIGHT as u32);
+    let mut fb = FbNow::new(WindowBuilder::new().with_title("chip8-rs"), WIDTH as u32, HEIGHT as u32);
     let mut window_open = true;
     let mut video_sink = VideoSink::new();
     let mut chip8 = Chip8::new();
