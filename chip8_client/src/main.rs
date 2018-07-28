@@ -106,7 +106,7 @@ fn main() {
                 .collect();
             fb.update_buffer(buffer);
             // TODO: This needs to be smarter
-            thread::sleep(Duration::from_millis(3))
         }
+        thread::sleep(Duration::from_millis(7))
     }
 }

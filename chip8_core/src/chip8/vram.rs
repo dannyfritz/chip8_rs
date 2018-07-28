@@ -70,16 +70,11 @@ impl Vram {
     ) -> bool {
         let mut pixel_unset = false;
         for row in 0..rows as usize {
-            if row + y as usize >= HEIGHT {
-                continue;
-            }
             let sprite = memory.read(sprite_addr + row as u16);
             for col in 0..SPRITE_WIDTH {
-                if col + x as usize >= WIDTH {
-                    continue;
-                }
                 let (blit, _) = sprite.overflowing_shr((SPRITE_WIDTH - col - 1) as u32);
-                let pixel = &mut self.data[(row + y as usize) * WIDTH + (col + x as usize)];
+                let pixel = &mut self.data
+                    [((row + y as usize) % HEIGHT) * WIDTH + ((col + x as usize) % WIDTH)];
                 let existing_pixel = *pixel;
                 *pixel ^= blit & 1 == 1;
                 if existing_pixel && !(*pixel) {
