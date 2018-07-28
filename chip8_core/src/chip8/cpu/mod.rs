@@ -1,5 +1,6 @@
 mod instruction;
 use self::instruction::{Instruction, OpCode};
+use chip8::audio::{AudioEvent, AudioSink};
 use chip8::keyboard::{HexKey, Keyboard};
 use chip8::memory::Memory;
 use chip8::stack::Stack;
@@ -65,15 +66,22 @@ impl Cpu {
         vram: &mut Vram,
         keyboard: &Keyboard,
         video_sink: &mut VideoSink,
+        audio_sink: &mut AudioSink,
     ) {
         // println!(" ? {:?}", self);
         // println!(" ? {:?}", self.stack);
         let data = self.fetch(memory);
         let opcode = self.decode(data);
         // println!("> {:?}", opcode);
+        let old_sound_timer = self.sound_timer;
         self.execute(&opcode, memory, vram, keyboard, video_sink);
         self.delay_timer = self.delay_timer.saturating_sub(1);
         self.sound_timer = self.sound_timer.saturating_sub(1);
+        if old_sound_timer == 0 && self.sound_timer > 1 {
+            audio_sink.event = Some(AudioEvent::Play);
+        } else if old_sound_timer > 0 && self.sound_timer == 0 {
+            audio_sink.event = Some(AudioEvent::Stop);
+        }
     }
     pub fn fetch(&self, memory: &Memory) -> DWord {
         memory.read_dword(self.pc)

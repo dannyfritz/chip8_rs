@@ -1,14 +1,16 @@
+pub mod audio;
 mod cpu;
+pub mod keyboard;
 mod memory;
 mod stack;
 pub mod vram;
-pub mod keyboard;
 
+use self::audio::AudioSink;
 use self::cpu::Cpu;
-use self::memory::Memory;
-use self::vram::Vram;
 use self::keyboard::Keyboard;
+use self::memory::Memory;
 use self::vram::VideoSink;
+use self::vram::Vram;
 use program::Program;
 
 pub type Address = u16;
@@ -39,8 +41,18 @@ impl Chip8 {
     pub fn load_program(&mut self, program: &Program) {
         self.memory.load_program(&program);
     }
-    pub fn step(&mut self, keyboard: &Keyboard, mut video_sink: &mut VideoSink) {
-        self.cpu
-            .tick(&mut self.memory, &mut self.vram, keyboard, &mut video_sink);
+    pub fn step(
+        &mut self,
+        keyboard: &Keyboard,
+        video_sink: &mut VideoSink,
+        audio_sink: &mut AudioSink,
+    ) {
+        self.cpu.tick(
+            &mut self.memory,
+            &mut self.vram,
+            keyboard,
+            video_sink,
+            audio_sink,
+        );
     }
 }

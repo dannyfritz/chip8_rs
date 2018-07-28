@@ -1,3 +1,4 @@
+use chip8_core::chip8::audio::{AudioEvent, AudioSink};
 use chip8_core::chip8::keyboard::{HexKey, Keyboard};
 use chip8_core::chip8::vram::{VideoSink, HEIGHT, WIDTH};
 use chip8_core::chip8::Chip8;
@@ -6,6 +7,10 @@ use fb_now::glutin::{
     ElementState, Event, KeyboardInput, VirtualKeyCode, WindowBuilder, WindowEvent,
 };
 use fb_now::FbNow;
+use rodio::default_output_device;
+use rodio::source::SineWave;
+use rodio::source::Source;
+use rodio::Sink;
 use std::env;
 use std::thread;
 use std::time::Duration;
@@ -33,9 +38,19 @@ fn main() {
         return;
     }
     let program_file = env::args().nth(1).unwrap();
-    let mut fb = FbNow::new(WindowBuilder::new().with_title("chip8-rs"), WIDTH as u32, HEIGHT as u32);
+    let mut fb = FbNow::new(
+        WindowBuilder::new().with_title("chip8-rs"),
+        WIDTH as u32,
+        HEIGHT as u32,
+    );
     let mut window_open = true;
     let mut video_sink = VideoSink::new();
+    let mut audio_sink = AudioSink::new();
+    let device = default_output_device().unwrap();
+    let sink = Sink::new(&device);
+    let source = SineWave::new(440).delay(Duration::from_millis(10));
+    sink.append(source);
+    sink.pause();
     let mut chip8 = Chip8::new();
     let program = Program::new(&program_file);
     chip8.load_program(&program);
@@ -71,7 +86,12 @@ fn main() {
                 keyboard_update!(event, keyboard, HexKey::Xf, VirtualKeyCode::V);
             }
         });
-        chip8.step(&keyboard, &mut video_sink);
+        chip8.step(&keyboard, &mut video_sink, &mut audio_sink);
+        match audio_sink.event.take() {
+            Some(AudioEvent::Play) => sink.play(),
+            Some(AudioEvent::Stop) => sink.pause(),
+            None => {}
+        }
         if let Some(sink_buffer) = video_sink.get() {
             let buffer = sink_buffer
                 .data

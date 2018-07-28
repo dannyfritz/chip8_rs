@@ -9,3 +9,4 @@ edition = '2018'
 [dependencies]
 chip8_core = { path = "../chip8_core" }
 fb_now = { path = "../fb_now" }
+rodio = "0.8.0"
