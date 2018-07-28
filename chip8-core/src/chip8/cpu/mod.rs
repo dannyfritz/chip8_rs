@@ -116,14 +116,14 @@ impl Cpu {
             OpCode::SubVx(vx, vy) => {
                 let value_x = self.v[vx as usize];
                 let value_y = self.v[vy as usize];
-                self.v[0xF as usize] = if value_x > value_y { 1 } else { 0 };
+                self.v[0xF as usize] = if value_x > value_y { 0 } else { 1 };
                 self.v[vx as usize] = value_y.saturating_sub(value_x);
                 self.pc += 2;
             }
             OpCode::SubVy(vx, vy) => {
                 let value_x = self.v[vx as usize];
                 let value_y = self.v[vy as usize];
-                self.v[0xF as usize] = if value_y > value_x { 1 } else { 0 };
+                self.v[0xF as usize] = if value_y > value_x { 0 } else { 1 };
                 self.v[vx as usize] = value_x.saturating_sub(value_y);
                 self.pc += 2;
             }
