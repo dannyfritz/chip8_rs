@@ -1,11 +1,11 @@
 cargo-features = ["edition"]
 
 [package]
-name = "chip8-client"
+name = "chip8_client"
 version = "0.1.0"
 authors = ["Danny Fritz <dannyfritz@gmail.com>"]
 edition = '2018'
 
 [dependencies]
-chip8-core = { path = "../chip8-core" }
+chip8_core = { path = "../chip8_core" }
 fb_now = { path = "../fb_now" }

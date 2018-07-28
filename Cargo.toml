@@ -1,6 +1,6 @@
 [workspace]
 members = [
-  "chip8-client",
-  "chip8-core",
+  "chip8_client",
+  "chip8_core",
   "fb_now",
 ]
