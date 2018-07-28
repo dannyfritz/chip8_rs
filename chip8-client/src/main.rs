@@ -6,9 +6,12 @@ use fb_now::glutin::{
     ElementState, Event, KeyboardInput, VirtualKeyCode, WindowBuilder, WindowEvent,
 };
 use fb_now::FbNow;
+use std::env;
+use std::thread;
+use std::time::Duration;
 
 macro_rules! keyboard_update {
-    ($event: ident, $keyboard: ident, $chip8_keycode: path, $keycode: path) => {
+    ($event:ident, $keyboard:ident, $chip8_keycode:path, $keycode:path) => {
         if let WindowEvent::KeyboardInput {
             input:
                 KeyboardInput {
@@ -19,20 +22,22 @@ macro_rules! keyboard_update {
             ..
         } = $event
         {
-            $keyboard.update_key(
-                $chip8_keycode,
-                state == ElementState::Pressed,
-            );
+            $keyboard.update_key($chip8_keycode, state == ElementState::Pressed);
         }
     };
 }
 
 fn main() {
+    if env::args().len() != 2 {
+        eprintln!("chip8-client [CHIP8 FILE]");
+        return;
+    }
+    let program_file = env::args().nth(1).unwrap();
     let mut fb = FbNow::new(WindowBuilder::new(), WIDTH as u32, HEIGHT as u32);
     let mut window_open = true;
     let mut video_sink = VideoSink::new();
     let mut chip8 = Chip8::new();
-    let program = Program::new("./programs/GUESS");
+    let program = Program::new(&program_file);
     chip8.load_program(&program);
     let mut keyboard = Keyboard::new();
     while window_open {
@@ -80,6 +85,8 @@ fn main() {
                 })
                 .collect();
             fb.update_buffer(buffer);
+            // TODO: This needs to be smarter
+            thread::sleep(Duration::from_millis(3))
         }
     }
 }
